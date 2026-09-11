@@ -1,0 +1,823 @@
+Character-level language models trained on input.txt
+written 2026-09-11 05:50 | torch 2.4.1+cpu on cpu (12 threads)
+data: 1,115,394 characters, vocabulary = 65 distinct characters, 90% train / 10% validation
+
+HOW TO READ THIS
+- 1 token = 1 character. Each output is 500 generated characters (max_new_tokens=500), about 91 words, plus the prompt.
+- context (block_size) = how many previous characters the model sees when it picks the next one.
+- sampling: temperature 0.8, top_k None, dropout off. Output N has the same seed and prompt in every run.
+- loss = cross-entropy per character on the 10% of text the model never trained on. Random guessing = ln(65) = 4.17.
+
+SUMMARY (val loss of the best checkpoint over 200 batches, lower is better)
+run                                params  context    iters  chars seen  train time  val loss
+1_bigram                            4,225        8   30,000        7.7M       0.6 m    2.4897
+2_trainhere_tinytransformer     1,204,545       12   52,280       10.0M      25.6 m    1.7847
+3_gpt_small                       824,897      128    3,000       12.3M      13.4 m    1.6098
+4_gpt_medium                    2,715,713      128    5,000       20.5M      57.8 m    1.4663
+(run 3's train time excludes 351 min when the laptop was asleep in Modern Standby, 22:55-04:46, and the run was frozen)
+
+
+====================================================================================================
+RUN 1/4: 1_bigram
+bigram.py as it is: the next character depends only on the current character (baseline)
+====================================================================================================
+parameters    : 4,225
+training      : 30,000 iters x batch 32 x context 8 = 7.7M characters (~8 passes over the training text)
+optimizer     : AdamW, constant lr 0.01 (torch defaults otherwise)
+training time : 0.6 min
+best val loss : 2.4818 at step 27,000 (checkpoint runs\1_bigram.pt)
+final loss    : train 2.4630 | val 2.4897 (best checkpoint, 200 batches)
+loss curve    : step -> train / val
+         0 -> 4.7305 / 4.7241
+     3,000 -> 2.4608 / 2.4861
+     6,000 -> 2.4610 / 2.4898
+     9,000 -> 2.4564 / 2.4943
+    12,000 -> 2.4516 / 2.4944
+    15,000 -> 2.4447 / 2.4885
+    18,000 -> 2.4584 / 2.4933
+    21,000 -> 2.4459 / 2.4968
+    24,000 -> 2.4652 / 2.4895
+    27,000 -> 2.4581 / 2.4818
+    30,000 -> 2.4587 / 2.4842
+
+----- output 1/10 | seed 1 | prompt '\n' -----
+ABUS:
+An ocourd se mar ar tht my we be dinditer w'se surd'Tis t is FI t ar tr'deate sy willlf thed w?
+Whed
+The iltichor thal bus I che him wey thit, n' sst elss at d d h d t!
+
+Comeat h the espoll fthyouer icower BO, tre alllone et de scke he y d VOULI bon ate e; Yofoffucld s arilig the s hesis thed lou; beinon DUCKINENowe pr pporongof g bonad icon by towin atomes t wor thisthesst eldmacoum oursande t ber-
+Harertheesorthowo s, o le, llll he shim ath s, he,
+IURDYoue, s t y har conovero t thitho 
+
+----- output 2/10 | seed 2 | prompt '\n' -----
+NGSCESer d yo menshon tinthe.
+Thownd, theacoue f iechangofo y st t, t, wore lougs aris s on s brshimeres wh dis prusto themee ent as f thente itharoure hand fess his t
+
+
+
+Do fot thee; fo thut yo ferd BY tad!
+HESthes, foung pen, windere as dinchats tsar ad thand the youges;
+Hes mericor her hyod wout tor tome wit ancer cory g I om heale,
+Tou t assig t man cod ge ofobell sethtss ces p t founowee anger y.
+MPllarsawno, mpe oo's R:
+Winom boroust the, gs ce d ing an t wnth t fepar thee STomer hurouet 
+
+----- output 3/10 | seed 3 | prompt '\n' -----
+Y cher curean's hisoto llere vere wis theser ll IZAUKI'llacathinotan' a thtind hisis ge andolde cithof bore morancthamenge s th OXIClere d Ve f ke f belldves, as dolde hed I berod Ireanerenenominelled aty'd in wiforefoolil nsend kicce butchedolen meve
+
+Thasts my ar bl e wh MEd llell I l ave and, alard ll d f wber ty wa poinds, ofrce mar woure!
+
+
+ORCanofourd herer.
+Bu wh. t f ousad:
+And asth, wero llllfand me:
+AHAROLI nthe anoance my?
+A mer bre t thethe; inther LYo aryest s, githan y foimbe jonoo
+
+----- output 4/10 | seed 4 | prompt '\n' -----
+ENEThaispr wor wo m.
+AUENo muthemstherands se winof at m,
+G dost the ll othan.
+Thaturimofe f the me the hm
+ING if bes, I ghaverours, tse?
+Whanolorerithadorrthin, athrsharovest helll ay welle thave t mur oure y at woulld at wis he c bed wot y d fathy INRYore sithainked?
+OLOUTha
+OUThotout aratho otatie wisuren ind m m whe d Sidove, me oreso paineneas tiralourore laund d he thally, bucowaithit ther:
+T:
+s oome wof be, wer t the, hes ardousea ceanos r, ws toto paisiffus.
+DWhere ved ag w an,
+Leshese
+
+----- output 5/10 | seed 5 | prompt '\n' -----
+Meaverofean wdimy, ametheacard t, tha, ton fry ak aird tur ws imy OLYorindshor, f ghealel t;
+CEOr thed celit whisus tho pofeanghe s Sik s thom, math he at
+Bucond d he ysemyowonge th bu, athus a the tr ow t ce:
+VIthon theathe s yo sll s, be f de ghe.
+BYonds, thiu hie s t ldveanknd, pe mat ils d in g y t!
+
+
+K:
+T:
+Yone as pem; w-
+S:
+
+
+A: IZA:
+
+LITheis.
+
+t fue l t wnis semer th Ano ll chear mas w stid t, tt magouther thasearen ouer antherr g f nd, theaswan thy thor t endooous tha ierithepises wo ttr
+
+----- output 6/10 | seed 6 | prompt 'ROMEO:\n' -----
+ROMEO:
+ORERGBuss wethasuteces thes, merto for be wirlathede tyess ber folde s borantchispor yothathade hil cchigacomy cats t f hinor:
+
+NEThoard bon couer s ileis, the tom cey t eas whie,
+Gord athet ld! womar tod, thy weenout lerinose d athe ferd pandghinitak dakerte nt tiosos t hathas wig ildsorthithe h e pithive bse s brd t, nthimas thaithenoll s maneallisod cor hang as t wh t to imean, har med and, ththom.
+Anouth, de hilere IUThis cidyorere l, t hereay pof t st ng:
+Nofoust l hothas w.
+
+Andu s stronor
+
+----- output 7/10 | seed 7 | prompt 'JULIET:\n' -----
+JULIET:
+UCE:
+
+I oourilald m he arove we be win alosannowit rowinoned th LI weakind, be t oden,
+
+
+
+Th, hes hend int itheand thow the thes m misty t.
+Anthome herd wy ond r:
+OLARThe keen
+
+WINI t, fus, be ce thr le windi heranderes athomy se indomathis nd ooure o'shise
+CA l t thame.
+ORDice tereshawingiof h mea
+MELLAs ss hel.
+Frare, and perer, cotot the tho wno llinound! afin.
+MI t IOMAngn; to arve lllve math hieithirour hel, wnsshe toreret st m ennd amath chefas d br:
+UETouro ind autha'stese winddin.
+Mat th
+
+----- output 8/10 | seed 8 | prompt 'KING RICHARD III:\n' -----
+KING RICHARD III:
+sha anoures fithengr, han noou tsanotl ancha 'll bou athe aie ndou kime thenur dou ble anedu wis s ssprabeshanoreve.
+
+
+Bu beres, on thiganore led w
+toith mimy w gathay dan, nt:
+FFithe pon ricanol stos t
+Ha f anced tho windosthe 'seond ICINENGLUCORI t the bernd g thuboul ce Ifor tlall ainods freeave sto pe a m he poro st,
+Thitillse be thitor had pate
+I msur My waser hy fover taveayo y whinons gethenound.
+Whanoncourd s is, ke t gand ou brou parou mss pollacy brod by; e lloron ceirond chatheno agar
+
+----- output 9/10 | seed 9 | prompt 'First Citizen:\n' -----
+First Citizen:
+Cal
+
+The, s me this
+S we wofond gunt d d t f pa y'spit l ivethy'so hin thar thasis
+The atsthe best f?
+Thalands walos fth ay wo ll te-
+S:
+DULONGENotor!---for
+Th The or sallimousons
+O:
+
+m bs Timy min E:
+A tanthe?
+I brind o hes llancer os Maicoveleng d s ftheas ms ghe nthachararthy ag the, maghe, lo male her mp y, pril RERYor h astar, my f ith mave bunce the yor pon my he, ing, se ad, othanovelou as d t, t pugowisera neeese br amul ais me anghe ot pe,
+HEROLUS:
+Tod d my, lin lange my meant dy therer
+
+----- output 10/10 | seed 10 | prompt 'MENENIUS:\n' -----
+MENENIUS:
+D ing.
+Noulland fad wol co n adef s aneveake hesitis, u womu ak.
+RI as pin n atthe t ma theand ast, sithibrenon t Go pr thir whewige.
+PUShe pathers se t d t y t n IUSThewousout h:
+Theadarairan an bl an antous be teas pr ted heathanthe r'dsdewis athetharus wass ad hedse ttha tomy hes burous t the, ber gond.
+TMARO: ssor g plde.
+The won nt t HEORThe ion ale ps hat pond t I t t'd imyon, wicag icerind a us f fakee fa powes; ticon nghe te; w watomed sthe ay O: in GARK:
+Ild mm, gh bow f n' cakeay ndes 
+
+
+====================================================================================================
+RUN 2/4: 2_trainhere_tinytransformer
+trainhere.ipynb TinyTransformer with its original settings: 2 layers x 4 heads x 128 dim, feed-forward 2048, context 12, batch 16, constant lr 1e-4, 10 "epochs"
+====================================================================================================
+parameters    : 1,204,545
+training      : 52,280 iters x batch 16 x context 12 = 10.0M characters (~10 passes over the training text)
+optimizer     : AdamW, constant lr 0.0001 (torch defaults otherwise)
+training time : 25.6 min
+best val loss : 1.8056 at step 52,280 (checkpoint runs\2_trainhere_tinytransformer.pt)
+final loss    : train 1.6334 | val 1.7847 (best checkpoint, 200 batches)
+loss curve    : step -> train / val
+         0 -> 4.3812 / 4.3848
+     5,228 -> 1.9873 / 2.0439
+    10,456 -> 1.8457 / 1.9706
+    15,684 -> 1.7798 / 1.9292
+    20,912 -> 1.7342 / 1.8737
+    26,140 -> 1.7153 / 1.8560
+    31,368 -> 1.7022 / 1.8607
+    36,596 -> 1.6783 / 1.8120
+    41,824 -> 1.6408 / 1.8124
+    47,052 -> 1.6325 / 1.8089
+    52,280 -> 1.6377 / 1.8056
+
+----- output 1/10 | seed 1 | prompt '\n' -----
+DUKE OF YORK:
+Let to ard you think?
+
+PERDITA:
+O be so summ'd sension.
+
+GLOUCESTER:
+Yet, will hath do the plack, if it of that but I can him we are the sease expection of so the broke you shall black: you well were to true.
+
+MENENIUS:
+Sicker:
+Sir, the world at wear and forfe since the great to speak in the find a tall it
+Of the provery to be a pierces you state:
+He serves him were heldman am our and conver-boar's a place.
+
+JULIET:
+O, let it, ship as defence.
+A me, and with have I with him.
+
+Shou
+
+----- output 2/10 | seed 2 | prompt '\n' -----
+VOLUMNIA:
+Good lost their and such for and sovereigns upon so stred is word loves are to the speak.
+
+BUCKINGHAM:
+Alate them successeng the tell the say hands the holes
+To your the he; for I then fear and and all crock, by my traitors well, my lord. You have not the courts;
+And mark the scould me the Aspeople; than be content; of here all this soul kill you be to good soul'st place, the nature and the revenger, but made o' things.
+
+KING RICHARD:
+Let no did he crown the fear of me, what the honou
+
+----- output 3/10 | seed 3 | prompt '\n' -----
+Your wack and make I be me, over and father?
+
+WARWICK:
+And will not 'tis heir fair own;
+And the come to perdone that me the for hath and do suffer for the be, as dold--
+
+BUCKINGHAM:
+For men, my leased:
+Your in you were lieges, I knock to candolence a give itself are the who sens our glow what looke of this fribling the points, of cut lime to the heart about him that we the five and we was and man length; and and put so in and bay to so me, but the good;
+One that that exces, give.
+
+Service.
+
+Firs
+
+----- output 4/10 | seed 4 | prompt '\n' -----
+SENE:
+With hast thou woulds of a matter, repsecret for thy virtue the law that.
+
+QUEEN ELIZABETH:
+O, the husband farewell,
+To her passist?
+
+SICINIUS:
+And or thing attrange
+And a mother's noble grace, great to you for me, and this la bed.
+
+POMPEY:
+My lords go so this dead a some
+Of mother's a pair
+So to Claudio?
+
+SICINIUS:
+O heaven, honour blainence but to the scrave love the duce abhore.
+
+MENENIUS:
+Casteem. O a best love to tongue!
+
+JULIET:
+And brother for this field, where her against,
+And ene
+
+----- output 5/10 | seed 5 | prompt '\n' -----
+Meason for their for the women, and the
+on thy him ere the wrong more.
+
+GLOUCESTER:
+Male but a so them cold me, such Henry hangeneral, pity of in the due;
+But the beggarnering of the he at mother
+To you to cold--thou hands worlds slays, be she's nees of all hope him good help hath perpated stower good the crown.
+
+LUCIO:
+My good have forth, he loving to the love.
+
+MENENIUS:
+I would contrange the is a better doth of the breasoner and the given:
+It say and consult then of thy has bring piect was th
+
+----- output 6/10 | seed 6 | prompt 'ROMEO:\n' -----
+ROMEO:
+O, if you we hast
+Of sun, hold me to the life,
+And all ensing the sensel tongue with you.
+
+CORIOLANUS:
+O lord Mercute of my hate the affect as the said in sent to father ease him,
+And patience,
+And perfortunes of York of you excent.
+
+CORIOLANUS:
+This heart then knows,
+And where with the for the have I do evere see cot, not made pair enemy some back words then comparer: then intent harm?
+
+BAUTOLYCUS:
+Have did, dever that thou hast from All then,
+That for the grace, as he hother word?
+
+BUCKINGHAM:
+
+----- output 7/10 | seed 7 | prompt 'JULIET:\n' -----
+JULIET:
+Unless mooth last me there thee be will unearn with the hands
+Of the most and the deny in degrows a not of my dange of him the be some no mon them for broy? but the is thy design,
+To valus, but I thrink of mi here.
+
+DUKE OF YORK:
+What I do honour own behis to of the are be shall beds and time hound
+Mistal she purpose will to the lady was the rom no love that efill he the known; to Lord of the hath heaven the hearful shall I would you the contemps of he bring to the will him'd the way done the ex
+
+----- output 8/10 | seed 8 | prompt 'KING RICHARD III:\n' -----
+KING RICHARD III:
+Shall you should not, he and and we the never'd, but and wain to the place our dog been from with do pray you are from the prosperant:
+Say you not gued himine of a shall for the grown power can I says, that I pierce of York,
+Fear as therefore and service; and the subt to we for that be body from these press the disto make
+Not last be this black by thinks your was have for if a lady fair;
+And give my
+But, long courses is,
+I welcond on the pereof me, and I you
+are you.
+
+DUKE VINCENTIO:
+Stath, agai
+
+----- output 9/10 | seed 9 | prompt 'First Citizen:\n' -----
+First Citizen:
+I would feather time of thou sir, my ded to you well.
+Lord, thy more not the earth
+The breath best they stands and speak and paliers--
+
+CORIOLANUS:
+O! then have noble say?
+
+Nurse:
+O, how she may do see at one him bring of he louds me!
+I am the can suchful is made a not what she think from my daughter:
+I'll prompry with honour.
+
+CORIOLANUS:
+I lived, and Henry the heaven,
+And the good Buckingland she that purpose a have so brother am the and die, people propes of you have do not my lord, by the sa
+
+----- output 10/10 | seed 10 | prompt 'MENENIUS:\n' -----
+MENENIUS:
+Dow which his chard words of the speaken,
+That I will unpose a vail as pierce, the hope the good to sight, and for the hour'd him and methe pardon to pray the virtuous.
+
+DUKE OF YORK:
+When hands the know to Richare: and tell table the report!
+
+LUCIO:
+If in as tas he we this royal ever to set the from to the Marcius?
+
+DUKE OF ELIZABETH:
+Yet like not not she fear in't, to the deserves the good on him us for knees of the time of him tended Henry soul than in the give lip my go body, not and King Pa
+
+
+====================================================================================================
+RUN 3/4: 3_gpt_small
+improved GPT, small: 4 layers x 4 heads x 128 dim, context 128 (about the size and training budget of run 2)
+====================================================================================================
+parameters    : 824,897
+training      : 3,000 iters x batch 32 x context 128 = 12.3M characters (~12 passes over the training text)
+optimizer     : AdamW, lr 0.001 -> 0.0001 (warmup 100, cosine), weight decay 0.1, betas (0.9, 0.99), grad clip 1.0
+training time : 13.4 min of compute (wall clock 364.4 min: the laptop was asleep 22:55-04:46 and the run was frozen for 351 min)
+best val loss : 1.6057 at step 3,000 (checkpoint runs\3_gpt_small.pt)
+final loss    : train 1.4239 | val 1.6098 (best checkpoint, 200 batches)
+loss curve    : step -> train / val
+         0 -> 4.2004 / 4.2006
+       500 -> 2.1370 / 2.1777
+     1,000 -> 1.7471 / 1.8747
+     1,500 -> 1.5742 / 1.7552
+     2,000 -> 1.4901 / 1.6794
+     2,500 -> 1.4454 / 1.6367
+     3,000 -> 1.4217 / 1.6057
+
+----- output 1/10 | seed 1 | prompt '\n' -----
+DUKE VINCENTIO:
+Sir mark you think?
+
+PERDITA:
+O be so supp'd shall not not at the sens,
+And the king to her common a sould all in this is my duke;
+My news to know for my son, my honour bloody pale him.
+
+LADY ANNE:
+O, true.
+
+ISABELLA:
+Sick the lod time time at weal the fulling are the greaths:
+I cand love to him Death, that I have angrace,
+That is noble of that mest with the greath eldman.
+
+LEONTES:
+He have war's comes to his death;
+Which have it as with the wailing, some your consition and
+thou
+
+----- output 2/10 | seed 2 | prompt '\n' -----
+VOLUMNIA:
+Good lost to in any such from her this very from some,
+But I would set make to the Caphinius.
+
+DUKE VINCENTIO:
+What enter me the time sorrow than mades his revenge for thee;
+Riches a last down to good be to for fleen,
+The should did like that a tring heart our breast me.
+Why, sir, and the corroom? when in thou hath to the accester that
+wake the compet wish a set that be pleasure
+To may and the dearful were but 'tis to hear.
+What  therefore we in heart with thee, to her, what the housa
+
+----- output 3/10 | seed 3 | prompt '\n' -----
+Your wock and make I be me, to what he work?
+
+WARWICK:
+What is not no lord, where is gentleman we thou boy:
+But that me we soul earth tender boy with him voice.
+
+HENRY BOLINGBROKE:
+Then men, my lear beat your here were liege,
+How you be dispired: bear it with my lord
+Tell be dispring the voices, and he made heaving!
+
+AUFIDIUS:
+The dorst is in the lips about his life.
+
+BENVOLIO:
+Call you shall make love the boar here, not banished in?
+That's a good good kind that that ears parth?
+
+LUCIO:
+Go the o
+
+----- output 4/10 | seed 4 | prompt '\n' -----
+FRIAR LAURENCE:
+Your word.
+
+CORIOLANUS:
+Or Tybalt, for I am whose the law that warm,
+And the duke is the husband farewell,
+To her pass seen up the exied of resign atterner
+his and live thee earth, his prince a grave to
+this wish the bed woman in heart, as if I with the good
+To the mother's confiet of your grown;
+And thou delidest, my break paint may to the court,
+Being his chance abhood the tell the seals,
+And best were to company, and the talks reasons.
+
+Second Servant:
+The hear of allower-end
+
+----- output 5/10 | seed 5 | prompt '\n' -----
+Means the bastime, and hear is a place.
+
+CORIOLANUS:
+I will go much mark you be regest,
+The say of thy coldymnt?
+
+First Murderer:
+Norforth upon my blood to give with myself:
+We vient upon I servant to rest them he contry.
+
+VALERIA:
+This be she'll eyes on him of whiles the very bay permate.
+
+KING RICHARD III:
+Therefore them; wherefore my trive, I sweet well,
+By you them for the bloody are as the ider,
+Even to the prince of alask and the grace:
+It say an thy come to the suit has bring paint,
+A thr
+
+----- output 6/10 | seed 6 | prompt 'ROMEO:\n' -----
+ROMEO:
+O, I'll set that be so mine, men, there will like to thee,
+And for thy barth, they were made depain:
+Which, still she from the mother father house.
+
+DUKE VINCENTIO:
+When you will, I know the lady of the daughter of stands,
+Myet in me far his hands in heart than knows,
+And where within to this danger in the birds,
+For we have so pair'd help, my lord, and the dark's cord.
+
+KING RICHARD III:
+And, I thou may did, dever the provisons lord,
+And that come of them to as of such his as wood?
+
+BUCKINGHAM:
+
+----- output 7/10 | seed 7 | prompt 'JULIET:\n' -----
+JULIET:
+How to must in the
+should in me be press of my words.
+
+GLOUCESTER:
+The bows; but one of the good of no some the name.
+
+HENRY BOLINGBROKE:
+Thou would the pyple the child conden
+Some to being be compart unto mi him:
+Here we woman to many these heavy be be done.
+
+GLOUCESTER:
+Sir, my best with with the pity of see this
+are daughter the good before more love that end which
+That the country's save is the gives of the judging
+And love shame the city messenged by to the done
+When a'en that we the talk t
+
+----- output 8/10 | seed 8 | prompt 'KING RICHARD III:\n' -----
+KING RICHARD III:
+You are and foul not, he and and we the need 'gainst and
+wait news the made a mother not being of drepen'd.
+Now, Pothmen? What young beggen thy divity,
+Anding with shall for the ground of mind;
+I stong that I piece with my streak:
+The dray something did provides thus spoke I see
+To bear our from with our king of pleople,
+The glass of this black back in such me as have for it a lady,
+And not dastrong of believe for could,
+I wear that have of my brother's crave deby;
+Or, I have in such a them agai
+
+----- output 9/10 | seed 9 | prompt 'First Citizen:\n' -----
+First Citizen:
+I will do streat in the darkled guilty.
+
+BRUTUS:
+'Twith pitient;
+A diream as hath down atters best to your hands.
+
+WARWICK:
+O, like me a slain Edward!--
+
+DUKE VINCENTIO:
+But you shall me so it bed your at other, I will shall
+That say to a move many us for this of a mine;
+In she think father extleman with her your air
+Even the star, my faith made but doth and the heaven
+bind, then they are too daughter then the day.
+
+RICHARD:
+Ay, and mean the poor of Rutle; and my lords
+A lasse my lord, by the gr
+
+----- output 10/10 | seed 10 | prompt 'MENENIUS:\n' -----
+MENENIUS:
+Down, but his chair cold of her father,
+Which he will unpose a vail as pirse a thee.
+
+SWARD:
+O means it porture to the hour.
+
+BUCKINGHAM:
+But the stail for the such of the soul hath dads
+With the broke of you be tears: the passes of your sin!
+How we was in as a devidemition to thee his of will be:
+He would with strike in the plotesurence of means in me.
+
+FRIAR LAURENCE:
+My lord; what must is on humber farewell.
+
+DUKE OF YORK:
+Sir, so we Henry shall as his bazing.
+
+liveness:
+In be not a haught Pa
+
+
+====================================================================================================
+RUN 4/4: 4_gpt_medium
+improved GPT, medium: 6 layers x 6 heads x 192 dim, context 128 (the main model)
+====================================================================================================
+parameters    : 2,715,713
+training      : 5,000 iters x batch 32 x context 128 = 20.5M characters (~20 passes over the training text)
+optimizer     : AdamW, lr 0.001 -> 0.0001 (warmup 100, cosine), weight decay 0.1, betas (0.9, 0.99), grad clip 1.0
+training time : 57.8 min
+best val loss : 1.4665 at step 4,000 (checkpoint runs\4_gpt_medium.pt)
+final loss    : train 1.1986 | val 1.4663 (best checkpoint, 200 batches)
+loss curve    : step -> train / val
+         0 -> 4.2135 / 4.2124
+       500 -> 1.8853 / 1.9821
+     1,000 -> 1.5728 / 1.7696
+     1,500 -> 1.4403 / 1.6317
+     2,000 -> 1.3576 / 1.5673
+     2,500 -> 1.3052 / 1.5239
+     3,000 -> 1.2598 / 1.5082
+     3,500 -> 1.2310 / 1.4935
+     4,000 -> 1.2004 / 1.4665
+     4,500 -> 1.1799 / 1.4777
+     5,000 -> 1.1668 / 1.4681
+
+----- output 1/10 | seed 1 | prompt '\n' -----
+DUKE OF YORK:
+Let me above the mourn be disposed with him,
+That circumstance at thee are in the news.
+
+BUCKINGHAM:
+The confess is no more more than thou shalt straight.
+
+DUKE OF AUMERLE:
+Not off I have serviced him that offend it.
+
+ROMEO:
+No, inducing thy case that is forfeit as lived,
+The soldier discourse of the truth
+Of the prince and bones, the boy of the poor sea-son.
+
+HENRY BOLINGBROKE:
+As not this manage to bed, the bad of Oxford.
+
+BUCKINGHAM:
+Stay, he is not so, yet a common of all.
+
+WA
+
+----- output 2/10 | seed 2 | prompt '\n' -----
+NORTHUMBERLAND:
+Farewell, and stolen to her ten him sound,
+As he that thou didst make the breath him in his death.
+
+ROMEO:
+An enter thou with thy house hast those she beauty for thee;
+Richard in fearful to grave the sea-hand
+A full of carries like to counterfeit the pains;
+For they think thy death consent to come.
+
+MENENIUS:
+And here are they spide me a command for loss,
+And pluck'd their beet-starter body hates:
+Ascept 'tis to home, nor charged strength shall lint
+At the complexy of our mother
+
+----- output 3/10 | seed 3 | prompt '\n' -----
+Your wack and man are dead, over and father?
+
+WARWICK:
+What, wilt thou be the queen with all comes both.
+
+HENRY BOLINGBROKE:
+Pray thy fearful father be strange?
+
+KING RICHARD II:
+Three woen worthy several pain wrongs or with end.
+Thy brother Lord Warwick with my wrong eyes
+My son which, and thou art diet up to breast;
+Who owes of current of all the proper days.
+What we may fear and weep shall make love the boarl-pleasure.
+
+AUFIDIUS:
+O was good to the resign of the shrewd;
+And then you importune 
+
+----- output 4/10 | seed 4 | prompt '\n' -----
+FRIAR LAURENCE:
+My good cousin, as you have spoken for your watches,
+That the hand turn of your soldiers of the grace
+Persuade to pass speak and willing do resist award.
+
+AUTOLYCUS:
+I thank you are not too more at the common to me;
+For the chamber of the time of the dead.
+
+Clown:
+Thou shalt hear to-morrow is mine own what way
+Shall he be, and never but to the scratch
+To win his eyes of face. She had seen an order,
+As I think, he was find of a sweet.
+
+Provost:
+I will stay be virtue of mine, well
+
+----- output 5/10 | seed 5 | prompt '\n' -----
+Bear me with discovered valour, and they not be
+Untertake the smallest throne winds.
+
+ROMEO:
+Content me bastard?
+
+FRIAR PETER:
+Welcome, sir, and then we that made by
+The mind of the buried mother for the world:
+It is the servant cold shall be from your gage.
+
+ANTIGONUS:
+Why dost you part in their good face mortal earth?
+
+DUKE VINCENTIO:
+Ay, but, in that they were a sent
+Before the contrary be still, better to the good,
+Were ask'd their grace: for as they let it see
+To suppose their entertail thr
+
+----- output 6/10 | seed 6 | prompt 'ROMEO:\n' -----
+ROMEO:
+O, then shall be become to remember the place,
+And shall scier for thy borne conspires
+And made his children like sorrow me wrong.
+
+Page:
+What is that did sent to fazy? O fair simple's child,
+But rain to her hands with thine eyes.
+
+BENVOLIO:
+Speak it between, nor instant and continuing
+of night a while the better to the house.
+
+GREMIO:
+No, rather, what command that you shall be stuff'd?
+
+BAGOT:
+O hope, to the devil that thou hast from Albus,
+Had you for the grace of me the father dead?
+
+Second C
+
+----- output 7/10 | seed 7 | prompt 'JULIET:\n' -----
+JULIET:
+How!
+
+MARCIUS:
+Only he is very work.
+
+CORIOLANUS:
+Trust her! thou swear'st, be good night; then shall not be
+That you have no more till the fearful grace.
+
+ROMEO:
+On my condemned strong up, but I thrive them. I am not
+too some shall make me the other blood,
+I will take my life to be made time to fair.
+
+DUKE VINCENTIO:
+I am desperate to speak of his love,
+And effect him by the fire and to be assured;
+Who, then the days grows of very death.
+The master of this prayers or putting enemy.
+Come, the gr
+
+----- output 8/10 | seed 8 | prompt 'KING RICHARD III:\n' -----
+KING RICHARD III:
+Shall you seek the king hand, and not your general;
+Which you never imposs'd of her cousin.
+
+KING RICHARD II:
+Then, good my lord. But, go not from their heirs,
+That hath found their function with stones
+Have a captain with such a contrary;
+And, away the poor virtuous stocks for that
+Had some her villain to the captain, that he would
+Went the patient in such manage as the piece
+To try which bore in the triumph comfort is,
+The prate of the people stir, like an
+The stumble shadow of your bed as gam
+
+----- output 9/10 | seed 9 | prompt 'First Citizen:\n' -----
+First Citizen:
+Call him, strew them not work.
+
+BUCKINGHAM:
+I am too troubled to our ruthless,
+Uncle, whither best they shall call him from world
+The palm of God's common and trembling day.
+
+DORSET:
+What is my mind with a thousand makes her love!
+
+QUEEN ELIZABETH:
+As for this office passages, when I warrant thee,
+The people yet, and the ground as doth sit
+That he scarce the time of her business?
+
+GLOUCESTER:
+Then thy beauty love hath so brought and men
+All in very three than I do not what he was meet,
+And will 
+
+----- output 10/10 | seed 10 | prompt 'MENENIUS:\n' -----
+MENENIUS:
+Down your highness under you are so all.
+
+DUKE VINCENTIO:
+No more: farewell, a thearty tortunes of heigh!
+
+DUCHESS OVERDONE:
+Go, sir, my lord, I hope you and have I made myself.
+
+BUCKINGHAM:
+O, how now, my lord, we have despaired your lady?
+
+TYRREL:
+Have no soul been my true, my lord, to swear him;
+Eagon from the sun beauty days of a night:
+Off no way, she fear in't, to the destrum,
+And give our gates for king to see him,
+If not he be sweet this rest, and be a meckling speech;
+That's a happy man
