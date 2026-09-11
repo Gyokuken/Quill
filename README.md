@@ -1,6 +1,6 @@
-# Character-level GPT on Tiny Shakespeare
+# QUILL - Character-level GPT on Tiny Shakespeare
 
-Small character-level language models trained from scratch on Tiny Shakespeare (`input.txt`, about 1.1M characters), on a laptop CPU. The repo goes from a bigram baseline to a GPT-style transformer and compares four training runs side by side.
+Quill is a small GPT-style language model that writes text one character at a time. It's built in PyTorch on Andrej Karpathy's nanoGPT lecture code and trained from scratch on Tiny Shakespeare (about 1.1M characters). The main model, Quill-M (2.7M parameters), trains in about an hour on a laptop CPU and reaches a validation loss of 1.47. It writes Shakespeare-style dialogue with character names, verse lines and mostly real words, though not much sense yet. The repo also includes a Wikipedia scraper for collecting more training text.
 
 ![Loss curves of the four runs](loss_curves.png)
 
